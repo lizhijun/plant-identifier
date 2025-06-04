@@ -112,6 +112,31 @@ plant-identifier/
 
 MIT License
 
+## 🌐 部署上线
+
+### ⚡ 一键部署
+```bash
+./deploy.sh
+```
+
+### 🌟 推荐部署平台
+
+| 平台 | 特点 | 部署命令 | 成本 |
+|------|------|----------|------|
+| **Vercel** | 免费、零配置、全球CDN | `vercel --prod` | 免费 |
+| **Railway** | 免费额度、简单易用 | `railway up` | 免费额度 |
+| **Docker** | 灵活部署、适合VPS | `docker-compose up -d` | 按需付费 |
+
+### 📚 部署文档
+- [完整部署指南](DEPLOYMENT_GUIDE.md) - 详细的部署说明和配置
+- [快速部署指南](QUICK_DEPLOY.md) - 快速上手部署
+
+### 🔧 生产环境配置
+- 设置环境变量 `OPENROUTER_API_KEY`
+- 配置HTTPS和自定义域名
+- 启用CDN和缓存优化
+- 设置监控和日志记录
+
 ## 贡献
 
 欢迎提交Issue和Pull Request来改进这个项目！ 

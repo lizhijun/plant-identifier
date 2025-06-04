@@ -178,6 +178,16 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// 健康检查端点
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: process.env.npm_package_version || '1.0.0'
+  });
+});
+
 // 提供主页
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

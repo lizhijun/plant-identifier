@@ -251,17 +251,17 @@ class PlantIdentifier {
         // 处理分割线
         html = html.replace(/^---$/gm, '<hr>');
         
-        // 处理粗体和斜体（避免冲突）
-        // 先标记粗体，避免被斜体规则影响
-        html = html.replace(/\*\*([^*]+)\*\*/g, '___BOLD_START___$1___BOLD_END___');
-        html = html.replace(/__([^_]+)__/g, '___BOLD_START___$1___BOLD_END___');
+        // 处理粗体和斜体（改进的嵌套处理）
+        // 先处理粗体，使用更安全的临时标记符号
+        html = html.replace(/\*\*([^*]+(?:\*[^*]+\*[^*]*)*)\*\*/g, '§§§BOLDSTART§§§$1§§§BOLDEND§§§');
+        html = html.replace(/__([^_]+(?:_[^_]+_[^_]*)*)__/g, '§§§BOLDSTART§§§$1§§§BOLDEND§§§');
         
-        // 处理斜体
-        html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-        html = html.replace(/_([^_\n]+)_/g, '<em>$1</em>');
+        // 处理斜体（避免影响粗体标记）
+        html = html.replace(/\*([^*\n§]+)\*/g, '<em>$1</em>');
+        html = html.replace(/_([^_\n§]+)_/g, '<em>$1</em>');
         
-        // 恢复粗体标记
-        html = html.replace(/___BOLD_START___([^_]+)___BOLD_END___/g, '<strong>$1</strong>');
+        // 恢复粗体标记（可能包含已处理的斜体）
+        html = html.replace(/§§§BOLDSTART§§§([^§]+)§§§BOLDEND§§§/g, '<strong>$1</strong>');
         
         // 处理链接
         html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
