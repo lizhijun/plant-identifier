@@ -1,29 +1,32 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>免费识别植物</title>
+    <title>Plant Identifier</title>
     <link rel="stylesheet" href="style.css">
+    <script src="i18n.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>免费识别植物</h1>
-            <p>快速识别植物、花卉和树木，探索园艺技巧、详细的护理指南以及您身边的植物世界。</p>
+            <div class="container">
+                <h1 data-i18n="title">Plant Identifier</h1>
+                <p data-i18n="subtitle">AI-powered plant identification with free Qwen2.5-VL model</p>
+            </div>
         </header>
 
         <main>
             <!-- 图片上传区域 -->
             <div class="upload-section">
+                <h2 data-i18n="uploadTitle">Plant Identification</h2>
                 <div class="upload-area" id="uploadArea">
                     <div class="upload-content">
-                        <div class="plant-icon">🌸</div>
-                        <h3>已识别植物:</h3>
-                        <p class="plant-name">[木芙蓉]</p>
-                        <p class="plant-description">与我们的AI聊天了解更多关于这种植物的信息</p>
+                        <div class="plant-icon">🌿</div>
+                        <p data-i18n="uploadText">Click to upload or drag and drop plant images</p>
+                        <p class="upload-hint" data-i18n="supportedFormats">Supported formats: JPG, PNG, GIF, WebP, HEIC, HEIF (Max 10MB)</p>
                     </div>
-                    <button class="upload-btn" id="uploadBtn">上传新图片</button>
+                    <button class="upload-btn" id="uploadBtn" data-i18n="uploadButton">Upload New Image</button>
                     <input type="file" id="fileInput" accept="image/*,.heic,.heif" style="display: none;">
                 </div>
             </div>
@@ -31,75 +34,61 @@
             <!-- 识别结果区域 -->
             <div class="result-section" id="resultSection" style="display: none;">
                 <div class="result-header">
-                    <h3>植物名称</h3>
-                    <div class="ai-badge">AI驱动</div>
+                    <h3 data-i18n="resultsTitle">Identification Results</h3>
+                    <div class="ai-badge">AI</div>
                 </div>
                 
                 <div class="plant-info">
-                    <h4 id="plantName">[木芙蓉] (Hibiscus mutabilis)</h4>
+                    <h4 id="plantName"></h4>
                     
                     <div class="confidence">
-                        <h5>识别置信度</h5>
-                        <p id="confidenceText">高。该植物的特征与木芙蓉非常吻合，包括其大而鲜艳的花朵和深绿色的叶子。</p>
+                        <h5 data-i18n="confidence">Confidence</h5>
+                        <p id="confidenceText"></p>
                     </div>
 
                     <div class="features">
-                        <h5>植物特征</h5>
-                        <ul id="featuresList">
-                            <li>大型单瓣花朵，花瓣呈粉红色或淡粉色。</li>
-                            <li>花心黄色，花瓣边缘略带波浪状。</li>
-                            <li>叶子宽大，呈心形或卵形，边缘有锯齿。</li>
-                        </ul>
+                        <h5 data-i18n="characteristics">Characteristics</h5>
+                        <ul id="featuresList"></ul>
                     </div>
 
                     <div class="growth-habits">
-                        <h5>生长习性</h5>
-                        <div class="habit-item">
-                            <strong>生长环境：</strong>
-                            <span id="habitatText">喜欢阳光充足的环境，也能耐半阴。</span>
-                        </div>
-                        <div class="habit-item">
-                            <strong>生长方式：</strong>
-                            <span id="growthText">多年生灌木或小乔木，通常高度可达2-3米。</span>
-                        </div>
+                        <h5 data-i18n="growthHabits">Growth Habits</h5>
+                        <div id="habitatText"></div>
                     </div>
                 </div>
 
                 <!-- 常见问题标签 -->
                 <div class="question-tags">
-                    <button class="tag-btn" data-question="这种植物多久浇一次水？">这种植物多久浇一次水？</button>
-                    <button class="tag-btn" data-question="它需要什么样的光照条件？">它需要什么样的光照条件？</button>
-                    <button class="tag-btn" data-question="如何繁殖这种植物？">如何繁殖这种植物？</button>
-                    <button class="tag-btn" data-question="它对宠物有害吗？">它对宠物有害吗？</button>
-                    <button class="tag-btn" data-question="什么土壤最适合这种植物？">什么土壤最适合这种植物？</button>
+                    <h4 data-i18n="quickQuestions">Quick Questions</h4>
+                    <div class="tags-container">
+                        <button class="tag-btn" data-question="care" data-i18n="questions.care">How to care for this plant?</button>
+                        <button class="tag-btn" data-question="watering" data-i18n="questions.watering">How often should I water it?</button>
+                        <button class="tag-btn" data-question="light" data-i18n="questions.light">What lighting conditions does it need?</button>
+                        <button class="tag-btn" data-question="propagation" data-i18n="questions.propagation">How to propagate this plant?</button>
+                        <button class="tag-btn" data-question="diseases" data-i18n="questions.diseases">Common diseases and pests?</button>
+                        <button class="tag-btn" data-question="fertilizer" data-i18n="questions.fertilizer">What fertilizer should I use?</button>
+                    </div>
                 </div>
             </div>
 
             <!-- AI聊天区域 -->
             <div class="chat-section">
                 <div class="chat-header">
-                    <h3>与植物AI聊天了解[木芙蓉]</h3>
-                    <div class="ai-badge">AI驱动</div>
+                    <h3 data-i18n="chatTitle">AI Plant Assistant</h3>
+                    <div class="ai-badge">AI</div>
                 </div>
                 
                 <div class="chat-messages" id="chatMessages">
-                    <div class="message ai-message">
+                    <div class="message ai-message" id="welcomeMessage">
                         <div class="message-content">
-                            <p>我可以为您提供关于木芙蓉的详细信息，包括：</p>
-                            <ul>
-                                <li><strong>护理指南</strong> - 浇水、施肥、修剪技巧</li>
-                                <li><strong>繁殖方法</strong> - 扦插、播种等繁殖技术</li>
-                                <li><strong>病虫害防治</strong> - 常见问题及解决方案</li>
-                                <li><strong>季节性护理</strong> - 不同季节的护理要点</li>
-                            </ul>
-                            <p>请随时询问您想了解的内容！</p>
+                            <p data-i18n="noResults">No identification results yet. Please upload a plant image.</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="询问关于这种植物的问题..." />
-                    <button id="sendBtn">→</button>
+                    <input type="text" id="chatInput" data-i18n="chatPlaceholder" placeholder="Ask questions about plants..." />
+                    <button id="sendBtn" data-i18n="sendButton">Send</button>
                 </div>
             </div>
         </main>
@@ -107,7 +96,7 @@
 
     <div class="loading-overlay" id="loadingOverlay" style="display: none;">
         <div class="loading-spinner"></div>
-        <p>正在识别植物...</p>
+        <p id="loadingText" data-i18n="identifying">Identifying plant...</p>
     </div>
 
     <script src="script.js"></script>

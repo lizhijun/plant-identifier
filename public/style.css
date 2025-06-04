@@ -456,6 +456,75 @@ header p {
     font-size: 1.1rem;
 }
 
+/* 语言切换器样式 */
+.language-switcher {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.lang-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #666;
+    font-size: 14px;
+}
+
+.lang-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.lang-btn {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #666;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.lang-btn:hover {
+    background: #f0f8f0;
+    border-color: #4CAF50;
+}
+
+.lang-btn.active {
+    background: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+/* Header样式调整 */
+header {
+    position: relative;
+    padding: 40px 20px;
+}
+
+header .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* 上传提示样式 */
+.upload-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 10px;
+}
+
+/* 快速问题标签容器 */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .container {
@@ -487,5 +556,32 @@ header p {
     .tag-btn {
         width: 100%;
         text-align: left;
+    }
+
+    /* 移动端语言切换器 */
+    .language-switcher {
+        position: static;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .lang-selector {
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .lang-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+
+    /* 移动端标签容器 */
+    .tags-container {
+        justify-content: center;
+    }
+
+    .tag-btn {
+        font-size: 12px;
+        padding: 8px 12px;
     }
 } 

@@ -50,8 +50,11 @@ const upload = multer({
 // 植物识别API
 app.post('/api/identify', upload.single('image'), async (req, res) => {
   try {
+    const language = req.body.language || 'en';
+    
     if (!req.file) {
-      return res.status(400).json({ error: '请上传图片文件' });
+      const errorMsg = language === 'zh' ? '请上传图片文件' : 'Please upload an image file';
+      return res.status(400).json({ error: errorMsg });
     }
 
     // 压缩图片以减少API调用成本
@@ -63,6 +66,11 @@ app.post('/api/identify', upload.single('image'), async (req, res) => {
 
     const base64Image = compressedImage.toString('base64');
 
+    // 构建识别提示词
+    const identifyPrompt = language === 'zh' 
+      ? "请识别这张图片中的植物，并提供以下信息（请用中文回答）：\n1. 植物名称（中文名和学名）\n2. 识别置信度（高/中/低）\n3. 植物特征（3-4个要点）\n4. 生长习性（生长环境和生长方式）\n5. 护理建议（浇水频率、光照需求等）\n\n请按照以下JSON格式返回：\n{\n  \"name\": \"植物中文名\",\n  \"scientificName\": \"学名\",\n  \"confidence\": \"高/中/低\",\n  \"features\": [\"特征1\", \"特征2\", \"特征3\"],\n  \"habitat\": \"生长环境描述\",\n  \"growthPattern\": \"生长方式描述\",\n  \"care\": {\n    \"watering\": \"浇水建议\",\n    \"light\": \"光照需求\",\n    \"soil\": \"土壤要求\"\n  }\n}"
+      : "Please identify the plant in this image and provide the following information (respond in English):\n1. Plant name (common name and scientific name)\n2. Identification confidence (High/Medium/Low)\n3. Plant characteristics (3-4 key points)\n4. Growth habits (growing environment and growth pattern)\n5. Care recommendations (watering frequency, light requirements, etc.)\n\nPlease return in the following JSON format:\n{\n  \"name\": \"Common plant name\",\n  \"scientificName\": \"Scientific name\",\n  \"confidence\": \"High/Medium/Low\",\n  \"features\": [\"Feature 1\", \"Feature 2\", \"Feature 3\"],\n  \"habitat\": \"Growing environment description\",\n  \"growthPattern\": \"Growth pattern description\",\n  \"care\": {\n    \"watering\": \"Watering advice\",\n    \"light\": \"Light requirements\",\n    \"soil\": \"Soil requirements\"\n  }\n}";
+
     // 调用OpenRouter API
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
       model: "qwen/qwen2.5-vl-32b-instruct:free",
@@ -72,7 +80,7 @@ app.post('/api/identify', upload.single('image'), async (req, res) => {
           content: [
             {
               type: "text",
-              text: "请识别这张图片中的植物，并提供以下信息（请用中文回答）：\n1. 植物名称（中文名和学名）\n2. 识别置信度（高/中/低）\n3. 植物特征（3-4个要点）\n4. 生长习性（生长环境和生长方式）\n5. 护理建议（浇水频率、光照需求等）\n\n请按照以下JSON格式返回：\n{\n  \"name\": \"植物中文名\",\n  \"scientificName\": \"学名\",\n  \"confidence\": \"高/中/低\",\n  \"features\": [\"特征1\", \"特征2\", \"特征3\"],\n  \"habitat\": \"生长环境描述\",\n  \"growthPattern\": \"生长方式描述\",\n  \"care\": {\n    \"watering\": \"浇水建议\",\n    \"light\": \"光照需求\",\n    \"soil\": \"土壤要求\"\n  }\n}"
+              text: identifyPrompt
             },
             {
               type: "image_url",
@@ -106,7 +114,7 @@ app.post('/api/identify', upload.single('image'), async (req, res) => {
       }
     } catch (parseError) {
       // 如果JSON解析失败，返回原始文本
-      plantInfo = {
+      plantInfo = language === 'zh' ? {
         name: "未知植物",
         scientificName: "",
         confidence: "低",
@@ -118,6 +126,18 @@ app.post('/api/identify', upload.single('image'), async (req, res) => {
           light: "请咨询专业人士",
           soil: "请咨询专业人士"
         }
+      } : {
+        name: "Unknown Plant",
+        scientificName: "",
+        confidence: "Low",
+        features: ["AI identification result parsing failed"],
+        habitat: aiResponse,
+        growthPattern: "",
+        care: {
+          watering: "Please consult a professional",
+          light: "Please consult a professional",
+          soil: "Please consult a professional"
+        }
       };
     }
 
@@ -125,8 +145,9 @@ app.post('/api/identify', upload.single('image'), async (req, res) => {
 
   } catch (error) {
     console.error('植物识别错误:', error);
+    const errorMsg = language === 'zh' ? '植物识别失败，请稍后重试' : 'Plant identification failed, please try again later';
     res.status(500).json({ 
-      error: '植物识别失败，请稍后重试',
+      error: errorMsg,
       details: error.message 
     });
   }
@@ -135,15 +156,23 @@ app.post('/api/identify', upload.single('image'), async (req, res) => {
 // AI聊天API
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, plantInfo } = req.body;
+    const { message, plantInfo, language = 'en' } = req.body;
 
     if (!message) {
-      return res.status(400).json({ error: '请输入消息' });
+      const errorMsg = language === 'zh' ? '请输入消息' : 'Please enter a message';
+      return res.status(400).json({ error: errorMsg });
     }
 
-    const systemPrompt = plantInfo ? 
-      `你是一个植物专家AI助手。用户刚刚识别了一种植物：${plantInfo.name}（${plantInfo.scientificName}）。请基于这个植物的信息回答用户的问题。请用中文回答。` :
-      '你是一个植物专家AI助手。请用中文回答用户关于植物的问题。';
+    let systemPrompt;
+    if (language === 'zh') {
+      systemPrompt = plantInfo ? 
+        `你是一个植物专家AI助手。用户刚刚识别了一种植物：${plantInfo.name}（${plantInfo.scientificName}）。请基于这个植物的信息回答用户的问题。请用中文回答。` :
+        '你是一个植物专家AI助手。请用中文回答用户关于植物的问题。';
+    } else {
+      systemPrompt = plantInfo ? 
+        `You are a plant expert AI assistant. The user just identified a plant: ${plantInfo.name} (${plantInfo.scientificName}). Please answer the user's questions based on this plant information. Please respond in English.` :
+        'You are a plant expert AI assistant. Please answer user questions about plants in English.';
+    }
 
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
       model: "qwen/qwen2.5-vl-32b-instruct:free",
@@ -171,8 +200,9 @@ app.post('/api/chat', async (req, res) => {
 
   } catch (error) {
     console.error('AI聊天错误:', error);
+    const errorMsg = language === 'zh' ? 'AI聊天失败，请稍后重试' : 'AI chat failed, please try again later';
     res.status(500).json({ 
-      error: 'AI聊天失败，请稍后重试',
+      error: errorMsg,
       details: error.message 
     });
   }

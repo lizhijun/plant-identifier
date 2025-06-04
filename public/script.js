@@ -46,7 +46,8 @@ class PlantIdentifier {
             if (files.length > 0 && this.isValidImageFile(files[0])) {
                 this.handleFileUpload(files[0]);
             } else if (files.length > 0) {
-                this.showError('请上传有效的图片文件（支持JPG, PNG, GIF, WebP, HEIC, HEIF格式）');
+                const errorMsg = window.i18n ? window.i18n.t('errorFileType') : 'Unsupported file format. Please upload JPG, PNG, GIF, WebP, HEIC, or HEIF files.';
+                this.showError(errorMsg);
             }
         });
 
@@ -64,7 +65,8 @@ class PlantIdentifier {
         // 问题标签点击
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('tag-btn')) {
-                const question = e.target.getAttribute('data-question');
+                const questionKey = e.target.getAttribute('data-question');
+                const question = window.i18n ? window.i18n.t(`questions.${questionKey}`) : e.target.textContent;
                 this.chatInput.value = question;
                 this.sendMessage();
             }
@@ -81,6 +83,7 @@ class PlantIdentifier {
             // 创建FormData
             const formData = new FormData();
             formData.append('image', file);
+            formData.append('language', window.i18n ? window.i18n.getCurrentLang() : 'en');
 
             // 发送到后端识别
             const response = await fetch('/api/identify', {
@@ -99,7 +102,8 @@ class PlantIdentifier {
             
         } catch (error) {
             console.error('植物识别失败:', error);
-            this.showError('植物识别失败，请稍后重试。');
+            const errorMsg = window.i18n ? window.i18n.t('errorIdentify') : 'Failed to identify plant. Please try again.';
+            this.showError(errorMsg);
         } finally {
             this.showLoading(false);
         }
@@ -171,7 +175,16 @@ class PlantIdentifier {
 
     updateChatHeader(plantName) {
         const chatHeader = document.querySelector('.chat-header h3');
-        chatHeader.textContent = `与植物AI聊天了解${plantName}`;
+        if (window.i18n) {
+            const currentLang = window.i18n.getCurrentLang();
+            if (currentLang === 'zh') {
+                chatHeader.textContent = `与植物AI聊天了解${plantName}`;
+            } else {
+                chatHeader.textContent = `AI Plant Assistant - ${plantName}`;
+            }
+        } else {
+            chatHeader.textContent = `AI Plant Assistant - ${plantName}`;
+        }
     }
 
     async sendMessage() {
@@ -191,7 +204,8 @@ class PlantIdentifier {
                 },
                 body: JSON.stringify({
                     message: message,
-                    plantInfo: this.currentPlantInfo
+                    plantInfo: this.currentPlantInfo,
+                    language: window.i18n ? window.i18n.getCurrentLang() : 'en'
                 })
             });
 
@@ -204,7 +218,8 @@ class PlantIdentifier {
 
         } catch (error) {
             console.error('AI聊天失败:', error);
-            this.addMessage('抱歉，AI暂时无法回应，请稍后重试。', 'ai');
+            const errorMsg = window.i18n ? window.i18n.t('errorChat') : 'Failed to send message. Please try again.';
+            this.addMessage(errorMsg, 'ai');
         }
     }
 
@@ -369,5 +384,10 @@ class PlantIdentifier {
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
+    // 初始化国际化
+    if (window.i18n) {
+        window.i18n.init();
+    }
+    
     new PlantIdentifier();
 }); 
