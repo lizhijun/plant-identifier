@@ -105,7 +105,7 @@ plant-identifier/
 
 - 确保您有有效的OpenRouter API密钥
 - 图片大小限制为10MB
-- 支持的图片格式：JPG, PNG, GIF, WebP
+- 支持的图片格式：JPG, PNG, GIF, WebP, HEIC, HEIF
 - 免费模型可能有使用限制，请查看OpenRouter的使用条款
 
 ## 许可证

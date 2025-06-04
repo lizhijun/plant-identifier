@@ -23,10 +23,26 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024 // 10MB限制
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    // 支持的图片格式
+    const allowedMimes = [
+      'image/jpeg',
+      'image/jpg', 
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/heic',
+      'image/heif',
+      'application/octet-stream' // HEIC文件有时会被识别为这种类型
+    ];
+    
+    // 检查文件扩展名（用于HEIC格式的额外验证）
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
+    const fileExtension = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+    
+    if (allowedMimes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
       cb(null, true);
     } else {
-      cb(new Error('只支持图片文件'), false);
+      cb(new Error('只支持图片文件（JPG, PNG, GIF, WebP, HEIC, HEIF）'), false);
     }
   }
 });
@@ -39,9 +55,10 @@ app.post('/api/identify', upload.single('image'), async (req, res) => {
     }
 
     // 压缩图片以减少API调用成本
+    // Sharp会自动检测输入格式，包括HEIC/HEIF
     const compressedImage = await sharp(req.file.buffer)
       .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 80 })
+      .jpeg({ quality: 80 }) // 统一转换为JPEG格式发送给API
       .toBuffer();
 
     const base64Image = compressedImage.toString('base64');

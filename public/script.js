@@ -43,8 +43,10 @@ class PlantIdentifier {
             this.uploadArea.classList.remove('dragover');
             
             const files = e.dataTransfer.files;
-            if (files.length > 0 && files[0].type.startsWith('image/')) {
+            if (files.length > 0 && this.isValidImageFile(files[0])) {
                 this.handleFileUpload(files[0]);
+            } else if (files.length > 0) {
+                this.showError('请上传有效的图片文件（支持JPG, PNG, GIF, WebP, HEIC, HEIF格式）');
             }
         });
 
@@ -337,6 +339,27 @@ class PlantIdentifier {
 
     showLoading(show) {
         this.loadingOverlay.style.display = show ? 'flex' : 'none';
+    }
+
+    isValidImageFile(file) {
+        // 检查MIME类型
+        const validMimeTypes = [
+            'image/jpeg',
+            'image/jpg',
+            'image/png', 
+            'image/gif',
+            'image/webp',
+            'image/heic',
+            'image/heif'
+        ];
+        
+        // 检查文件扩展名
+        const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif'];
+        const fileName = file.name.toLowerCase();
+        const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+        
+        // HEIC文件有时MIME类型不准确，所以同时检查扩展名
+        return validMimeTypes.includes(file.type) || hasValidExtension;
     }
 
     showError(message) {
