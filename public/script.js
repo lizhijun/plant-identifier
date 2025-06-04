@@ -212,13 +212,127 @@ class PlantIdentifier {
         
         const messageContent = document.createElement('div');
         messageContent.className = 'message-content';
-        messageContent.textContent = content;
+        
+        if (type === 'ai') {
+            // AI消息支持Markdown格式
+            messageContent.innerHTML = this.parseMarkdown(content);
+        } else {
+            // 用户消息使用纯文本
+            messageContent.textContent = content;
+        }
         
         messageDiv.appendChild(messageContent);
         this.chatMessages.appendChild(messageDiv);
         
         // 滚动到底部
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+
+    parseMarkdown(text) {
+        // 改进的Markdown解析器
+        let html = text;
+        
+        // 处理代码块（先处理，避免被其他规则影响）
+        html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+        
+        // 处理行内代码
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+        
+        // 处理标题（从大到小）
+        html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+        html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+        html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+        
+        // 处理引用
+        html = html.replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>');
+        
+        // 处理分割线
+        html = html.replace(/^---$/gm, '<hr>');
+        
+        // 处理粗体和斜体（避免冲突）
+        // 先标记粗体，避免被斜体规则影响
+        html = html.replace(/\*\*([^*]+)\*\*/g, '___BOLD_START___$1___BOLD_END___');
+        html = html.replace(/__([^_]+)__/g, '___BOLD_START___$1___BOLD_END___');
+        
+        // 处理斜体
+        html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+        html = html.replace(/_([^_\n]+)_/g, '<em>$1</em>');
+        
+        // 恢复粗体标记
+        html = html.replace(/___BOLD_START___([^_]+)___BOLD_END___/g, '<strong>$1</strong>');
+        
+        // 处理链接
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+        
+        // 分割成行处理列表
+        const lines = html.split('\n');
+        const processedLines = [];
+        let inList = false;
+        let listType = null;
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            
+            // 检查是否是列表项
+            const unorderedMatch = line.match(/^[\s]*[-*] (.+)$/);
+            const orderedMatch = line.match(/^[\s]*\d+\. (.+)$/);
+            
+            if (unorderedMatch) {
+                if (!inList || listType !== 'ul') {
+                    if (inList) processedLines.push(`</${listType}>`);
+                    processedLines.push('<ul>');
+                    inList = true;
+                    listType = 'ul';
+                }
+                processedLines.push(`<li>${unorderedMatch[1]}</li>`);
+            } else if (orderedMatch) {
+                if (!inList || listType !== 'ol') {
+                    if (inList) processedLines.push(`</${listType}>`);
+                    processedLines.push('<ol>');
+                    inList = true;
+                    listType = 'ol';
+                }
+                processedLines.push(`<li>${orderedMatch[1]}</li>`);
+            } else {
+                if (inList) {
+                    processedLines.push(`</${listType}>`);
+                    inList = false;
+                    listType = null;
+                }
+                processedLines.push(line);
+            }
+        }
+        
+        // 关闭未关闭的列表
+        if (inList) {
+            processedLines.push(`</${listType}>`);
+        }
+        
+        html = processedLines.join('\n');
+        
+        // 处理段落（避免影响已有的HTML标签）
+        const paragraphs = html.split('\n\n');
+        const processedParagraphs = paragraphs.map(p => {
+            p = p.trim();
+            if (!p) return '';
+            
+            // 如果已经是HTML标签，不要包装
+            if (p.startsWith('<') || p.includes('<h') || p.includes('<ul>') || 
+                p.includes('<ol>') || p.includes('<pre>') || p.includes('<blockquote>') || 
+                p.includes('<hr>')) {
+                return p;
+            }
+            
+            // 包装为段落
+            return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+        });
+        
+        html = processedParagraphs.join('');
+        
+        // 清理多余的换行
+        html = html.replace(/\n+/g, '');
+        
+        return html;
     }
 
     showLoading(show) {

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown测试 - 植物识别</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .markdown-input {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        .test-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .preview-area {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 100px;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <header>
+            <h1>Markdown解析测试</h1>
+            <p>测试AI聊天消息的Markdown格式支持</p>
+        </header>
+
+        <div class="test-section">
+            <h2>Markdown输入测试</h2>
+            <textarea class="markdown-input" id="markdownInput" placeholder="在这里输入Markdown格式的文本...">
+# 木芙蓉护理指南
+
+## 基本信息
+**学名**: Hibiscus mutabilis  
+**别名**: 芙蓉花、拒霜花
+
+## 护理要点
+
+### 1. 浇水管理
+- **频率**: 每2-3天浇水一次
+- **方法**: 保持土壤微湿，避免积水
+- **注意**: 夏季增加频率，冬季减少
+
+### 2. 光照需求
+木芙蓉喜欢 **充足的阳光**，每天至少需要6小时直射光。
+
+### 3. 土壤要求
+- 排水良好的沙质土壤
+- pH值: 6.0-7.0
+- 富含有机质
+
+## 繁殖方法
+
+1. **扦插繁殖** - 春季最佳
+2. **播种繁殖** - 秋季进行
+3. **分株繁殖** - 适合老株
+
+## 常见问题
+
+> **问**: 叶子发黄怎么办？  
+> **答**: 可能是浇水过多或缺乏光照导致的。
+
+## 代码示例
+```javascript
+// 植物护理提醒
+function careReminder(plant) {
+    console.log(`记得给${plant}浇水！`);
+}
+```
+
+更多信息请访问: [植物护理网站](https://example.com)
+
+---
+
+*希望这些信息对您有帮助！*
+            </textarea>
+            
+            <div>
+                <button class="test-btn" onclick="testMarkdown()">解析Markdown</button>
+                <button class="test-btn" onclick="clearPreview()">清空预览</button>
+                <button class="test-btn" onclick="loadSample()">加载示例</button>
+            </div>
+            
+            <div class="preview-area" id="previewArea">
+                <p style="color: #666;">Markdown解析结果将显示在这里...</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>聊天消息预览</h2>
+            <div class="chat-messages" style="max-height: 400px; overflow-y: auto;">
+                <div class="message ai-message">
+                    <div class="message-content" id="chatPreview">
+                        <p>点击"解析Markdown"按钮查看聊天消息效果</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/" class="test-btn">返回主页</a>
+        </div>
+    </div>
+
+    <script>
+        // 复制主页面的Markdown解析函数
+        function parseMarkdown(text) {
+            let html = text;
+            
+            // 处理代码块
+            html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+            
+            // 处理行内代码
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // 处理粗体
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+            
+            // 处理斜体
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+            
+            // 处理链接
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+            
+            // 处理标题
+            html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+            
+            // 处理引用
+            html = html.replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>');
+            
+            // 处理分割线
+            html = html.replace(/^---$/gm, '<hr>');
+            
+            // 处理无序列表
+            html = html.replace(/^\* (.*$)/gm, '<li>$1</li>');
+            html = html.replace(/^- (.*$)/gm, '<li>$1</li>');
+            
+            // 处理有序列表
+            html = html.replace(/^\d+\. (.*$)/gm, '<li>$1</li>');
+            
+            // 包装列表项
+            html = html.replace(/(<li>.*?<\/li>)/gs, function(match) {
+                return '<ul>' + match + '</ul>';
+            });
+            
+            // 处理换行
+            html = html.replace(/\n\n/g, '</p><p>');
+            html = html.replace(/\n/g, '<br>');
+            
+            // 包装段落
+            if (!html.includes('<p>') && !html.includes('<h') && !html.includes('<ul>') && !html.includes('<pre>')) {
+                html = '<p>' + html + '</p>';
+            }
+            
+            return html;
+        }
+
+        function testMarkdown() {
+            const input = document.getElementById('markdownInput').value;
+            const parsed = parseMarkdown(input);
+            
+            // 显示在预览区域
+            document.getElementById('previewArea').innerHTML = parsed;
+            
+            // 显示在聊天消息中
+            document.getElementById('chatPreview').innerHTML = parsed;
+        }
+
+        function clearPreview() {
+            document.getElementById('previewArea').innerHTML = '<p style="color: #666;">Markdown解析结果将显示在这里...</p>';
+            document.getElementById('chatPreview').innerHTML = '<p>点击"解析Markdown"按钮查看聊天消息效果</p>';
+        }
+
+        function loadSample() {
+            const sample = `# 木芙蓉护理指南
+
+## 基本信息
+**学名**: Hibiscus mutabilis  
+**别名**: 芙蓉花、拒霜花
+
+## 护理要点
+
+### 1. 浇水管理
+- **频率**: 每2-3天浇水一次
+- **方法**: 保持土壤微湿，避免积水
+- **注意**: 夏季增加频率，冬季减少
+
+### 2. 光照需求
+木芙蓉喜欢 **充足的阳光**，每天至少需要6小时直射光。
+
+### 3. 土壤要求
+- 排水良好的沙质土壤
+- pH值: 6.0-7.0
+- 富含有机质
+
+## 繁殖方法
+
+1. **扦插繁殖** - 春季最佳
+2. **播种繁殖** - 秋季进行
+3. **分株繁殖** - 适合老株
+
+## 常见问题
+
+> **问**: 叶子发黄怎么办？  
+> **答**: 可能是浇水过多或缺乏光照导致的。
+
+## 代码示例
+\`\`\`javascript
+// 植物护理提醒
+function careReminder(plant) {
+    console.log(\`记得给\${plant}浇水！\`);
+}
+\`\`\`
+
+更多信息请访问: [植物护理网站](https://example.com)
+
+---
+
+*希望这些信息对您有帮助！*`;
+            
+            document.getElementById('markdownInput').value = sample;
+        }
+
+        // 页面加载时自动加载示例
+        window.onload = function() {
+            loadSample();
+            testMarkdown();
+        };
+    </script>
+</body>
+</html> 
